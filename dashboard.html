@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketLedger — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════════════ -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <div class="brand-icon">💰</div>
+      <h2>PocketLedger</h2>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span data-label="dashboard">Dashboard</span>
+    </div>
+
+    <div class="nav-section-label">Transactions</div>
+    <div class="nav-item" data-section="income" onclick="showSection('income')">
+      <span class="nav-icon">💰</span>
+      <span data-label="income">Income</span>
+    </div>
+    <div class="nav-item" data-section="expenses" onclick="showSection('expenses')">
+      <span class="nav-icon">💸</span>
+      <span data-label="expenses">Expenses</span>
+    </div>
+    <div class="nav-item" data-section="ledger" onclick="showSection('ledger')">
+      <span class="nav-icon">🤝</span>
+      <span data-label="ledger">People Ledger</span>
+    </div>
+
+    <div class="nav-section-label">Management</div>
+    <div class="nav-item" data-section="bills" onclick="showSection('bills')">
+      <span class="nav-icon">📋</span>
+      <span data-label="bills">Bills</span>
+    </div>
+    <div class="nav-item" data-section="reports" onclick="showSection('reports')">
+      <span class="nav-icon">📈</span>
+      <span data-label="reports">Reports</span>
+    </div>
+
+    <div class="nav-section-label">Personal</div>
+    <div class="nav-item" data-section="notes" onclick="showSection('notes')">
+      <span class="nav-icon">📝</span>
+      <span data-label="notes">Notes</span>
+    </div>
+    <div class="nav-item" data-section="settings" onclick="showSection('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span data-label="settings">Settings</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar"><span id="user-avatar-letter">U</span></div>
+      <div class="user-email" id="user-email">user@example.com</div>
+    </div>
+    <button class="btn btn-ghost btn-full btn-sm" onclick="logout()">🚪 Logout</button>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <button class="btn btn-ghost btn-icon" id="hamburger-btn" onclick="toggleSidebar()" style="display:none">☰</button>
+      <h1 class="page-title" id="page-title">Dashboard</h1>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="global-search" placeholder="Search…" oninput="handleGlobalSearch(this.value)" />
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Toggle theme" id="theme-btn">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="showSection('settings')">⚙️</button>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">🚪</button>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <main class="page-content">
+
+    <!-- ── Summary Cards (always visible) ── -->
+    <div class="summary-grid">
+      <div class="summary-card card-balance" id="card-balance">
+        <div class="card-icon">📊</div>
+        <div class="card-label">Current Balance</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Total income − expenses</div>
+      </div>
+      <div class="summary-card card-income" id="card-income">
+        <div class="card-icon">💰</div>
+        <div class="card-label">Income This Month</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Current month</div>
+      </div>
+      <div class="summary-card card-expense" id="card-expense">
+        <div class="card-icon">💸</div>
+        <div class="card-label">Expenses This Month</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Current month</div>
+      </div>
+      <div class="summary-card card-savings" id="card-savings">
+        <div class="card-icon">🏦</div>
+        <div class="card-label">Total Savings</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Accumulated balance</div>
+      </div>
+      <div class="summary-card card-iowe" id="card-iowe">
+        <div class="card-icon">↗️</div>
+        <div class="card-label">Total I Owe</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Unsettled debts</div>
+      </div>
+      <div class="summary-card card-oweme" id="card-oweme">
+        <div class="card-icon">↙️</div>
+        <div class="card-label">Others Owe Me</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Pending receivables</div>
+      </div>
+      <div class="summary-card card-lent" id="card-lent">
+        <div class="card-icon">🤝</div>
+        <div class="card-label">Total Lent</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Money I gave out</div>
+      </div>
+      <div class="summary-card card-borrowed" id="card-borrowed">
+        <div class="card-icon">📤</div>
+        <div class="card-label">Total Borrowed</div>
+        <div class="card-value">৳0.00</div>
+        <div class="card-sub">Money I received</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         DASHBOARD SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view active" id="section-dashboard">
+      <div class="section-header">
+        <h2>Recent Transactions</h2>
+        <button class="btn btn-ghost btn-sm" onclick="openAddExpenseModal()">+ Quick Add</button>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody id="recent-tbody">
+            <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📊</div><p>No transactions yet</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         INCOME SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view" id="section-income">
+      <div class="section-header">
+        <h2>Income</h2>
+        <div class="filter-bar">
+          <input type="text" id="income-search" placeholder="Search…" oninput="renderIncomes()" />
+          <input type="month" id="income-month" oninput="renderIncomes()" />
+          <button class="btn btn-primary btn-sm" onclick="openAddIncomeModal()">+ Add Income</button>
+        </div>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Source</th><th>Amount</th><th>Note</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="income-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         EXPENSES SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view" id="section-expenses">
+      <div class="section-header">
+        <h2>Expenses</h2>
+        <div class="filter-bar">
+          <input type="text" id="expense-search" placeholder="Search…" oninput="renderExpenses()" />
+          <input type="month" id="expense-month" oninput="renderExpenses()" />
+          <select id="expense-cat-filter" onchange="renderExpenses()">
+            <option value="">All Categories</option>
+            <option>Mess Rent</option><option>Meal Charge</option><option>WiFi</option>
+            <option>Khala</option><option>Hand Cash</option><option>Transportation</option>
+            <option>Shopping</option><option>Medicine</option><option>Education</option>
+            <option>Entertainment</option><option>Other</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="openAddExpenseModal()">+ Add Expense</button>
+        </div>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Category</th><th>Amount</th><th>Note</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="expense-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         PEOPLE LEDGER SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view" id="section-ledger">
+      <div class="section-header">
+        <h2>People Ledger</h2>
+        <div class="filter-bar">
+          <input type="text" id="ledger-search" placeholder="Search person…" oninput="renderLedger()" />
+          <select id="ledger-status" onchange="renderLedger()">
+            <option value="">All Status</option>
+            <option value="settled">Settled</option>
+            <option value="unsettled">Unsettled</option>
+          </select>
+          <select id="ledger-type" onchange="renderLedger()">
+            <option value="">All Types</option>
+            <option value="gave">I Gave</option>
+            <option value="took">I Took</option>
+            <option value="owesMe">Owes Me</option>
+            <option value="iOwe">I Owe</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="openAddLedgerModal()">+ Add Entry</button>
+        </div>
+      </div>
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Person</th><th>Amount</th><th>Type</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="ledger-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         BILLS SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view" id="section-bills">
+      <div class="section-header">
+        <h2>Bills</h2>
+        <button class="btn btn-primary btn-sm" onclick="openAddBillModal()">+ Add Bill</button>
+      </div>
+      <div class="bills-grid" id="bills-grid">
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon">📋</div>
+          <p>No bills yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         REPORTS SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view" id="section-reports">
+      <div class="section-header">
+        <h2>Reports &amp; Analytics</h2>
+        <div class="filter-bar">
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📄 CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportJSON()">🗂 JSON</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportPDF()">🖨 Print/PDF</button>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>📊 Income vs Expenses (6 Months)</h3>
+          <canvas id="chart-income-expense"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>🥧 Expense by Category</h3>
+          <canvas id="chart-category"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>💳 Debts &amp; Receivables</h3>
+          <canvas id="chart-debt"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>📈 Running Balance (6 Months)</h3>
+          <canvas id="chart-monthly"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         NOTES SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view" id="section-notes">
+      <div class="section-header">
+        <h2>Notes &amp; Reminders</h2>
+        <button class="btn btn-primary btn-sm" onclick="openAddNoteModal()">+ Add Note</button>
+      </div>
+      <div class="notes-grid" id="notes-grid">
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon">📝</div>
+          <p>No notes yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SETTINGS SECTION
+    ═══════════════════════════════════════════ -->
+    <div class="section-view" id="section-settings">
+      <div class="section-header"><h2>Settings</h2></div>
+
+      <div class="settings-section">
+        <h3>🎨 Appearance</h3>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p>Dark Mode</p>
+            <span>Toggle between dark and light theme</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="theme-toggle" onchange="onThemeToggle(this.checked)" />
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p>Language</p>
+            <span>Choose display language</span>
+          </div>
+          <select id="lang-select" onchange="onLangChange(this.value)" style="width:auto;max-width:140px">
+            <option value="en">English</option>
+            <option value="bn">বাংলা</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>💱 Currency</h3>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p>Currency</p>
+            <span>Default: BDT (৳)</span>
+          </div>
+          <select onchange="state.settings.currency=this.value;refreshAll()" style="width:auto;max-width:140px">
+            <option value="BDT">BDT ৳</option>
+            <option value="USD">USD $</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>📦 Export &amp; Backup</h3>
+        <div class="setting-row">
+          <div class="setting-info"><p>Export CSV</p><span>All transactions as CSV</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">Export</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><p>Export JSON</p><span>Full data backup</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="exportJSON()">Export</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><p>Print / PDF</p><span>Print current view</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="exportPDF()">Print</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>🔐 Account</h3>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p>Logged in as</p>
+            <span id="settings-email">—</span>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+
+  </main><!-- /page-content -->
+</div><!-- /main-content -->
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM NAVIGATION (Mobile)
+═══════════════════════════════════════════════ -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-items">
+    <div class="bottom-nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
+      <span class="bnav-icon">📊</span><span>Home</span>
+    </div>
+    <div class="bottom-nav-item" data-section="income" onclick="showSection('income')">
+      <span class="bnav-icon">💰</span><span>Income</span>
+    </div>
+    <div class="bottom-nav-item" data-section="expenses" onclick="showSection('expenses')">
+      <span class="bnav-icon">💸</span><span>Expense</span>
+    </div>
+    <div class="bottom-nav-item" data-section="ledger" onclick="showSection('ledger')">
+      <span class="bnav-icon">🤝</span><span>Ledger</span>
+    </div>
+    <div class="bottom-nav-item" data-section="bills" onclick="showSection('bills')">
+      <span class="bnav-icon">📋</span><span>Bills</span>
+    </div>
+  </div>
+</nav>
+
+<!-- FAB -->
+<button class="fab" onclick="fabAction()" title="Add New">+</button>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════ -->
+
+<!-- Income Modal -->
+<div class="modal-overlay" id="income-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="income-modal-title">Add Income</h3>
+      <div class="modal-close" onclick="closeModal('income-modal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <form id="income-form" onsubmit="event.preventDefault(); submitIncomeForm()">
+        <div class="form-group">
+          <label>Amount (৳)</label>
+          <input type="number" id="income-amount" placeholder="0.00" step="0.01" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Source</label>
+          <input type="text" id="income-source" placeholder="e.g. Family — Abba, Freelance…" required />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="income-date" required />
+        </div>
+        <div class="form-group">
+          <label>Note (optional)</label>
+          <textarea id="income-note" placeholder="Any additional details…"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('income-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitIncomeForm()">Save Income</button>
+    </div>
+  </div>
+</div>
+
+<!-- Expense Modal -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="expense-modal-title">Add Expense</h3>
+      <div class="modal-close" onclick="closeModal('expense-modal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <form id="expense-form" onsubmit="event.preventDefault(); submitExpenseForm()">
+        <div class="form-group">
+          <label>Amount (৳)</label>
+          <input type="number" id="expense-amount" placeholder="0.00" step="0.01" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="expense-category" required>
+            <option value="Mess Rent">Mess Rent</option>
+            <option value="Meal Charge">Meal Charge</option>
+            <option value="WiFi">WiFi</option>
+            <option value="Khala">Khala</option>
+            <option value="Hand Cash">Hand Cash</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Medicine">Medicine</option>
+            <option value="Education">Education</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="expense-date" required />
+        </div>
+        <div class="form-group">
+          <label>Note (optional)</label>
+          <textarea id="expense-note" placeholder="Any additional details…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Receipt Image (optional)</label>
+          <label class="file-input-wrap">
+            <input type="file" id="expense-receipt" accept="image/*" />
+            📎 Tap to attach receipt
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('expense-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitExpenseForm()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- People Ledger Modal -->
+<div class="modal-overlay" id="ledger-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="ledger-modal-title">Add Ledger Entry</h3>
+      <div class="modal-close" onclick="closeModal('ledger-modal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <form id="ledger-form" onsubmit="event.preventDefault(); submitLedgerForm()">
+        <div class="form-group">
+          <label>Person Name</label>
+          <input type="text" id="ledger-person" placeholder="e.g. Rahim, Karim…" required />
+        </div>
+        <div class="form-group">
+          <label>Amount (৳)</label>
+          <input type="number" id="ledger-amount" placeholder="0.00" step="0.01" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="ledger-date" required />
+        </div>
+        <div class="form-group">
+          <label>Transaction Type (select all that apply)</label>
+          <div class="toggle-group">
+            <label class="toggle-item" for="toggle-gave-money">
+              <span class="toggle-label">💸 I Gave Money</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-gave-money" />
+                <span class="switch-slider"></span>
+              </label>
+            </label>
+            <label class="toggle-item" for="toggle-took-money">
+              <span class="toggle-label">💰 I Took Money</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-took-money" />
+                <span class="switch-slider"></span>
+              </label>
+            </label>
+            <label class="toggle-item" for="toggle-owes-me">
+              <span class="toggle-label">↙️ Person Owes Me</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-owes-me" />
+                <span class="switch-slider"></span>
+              </label>
+            </label>
+            <label class="toggle-item" for="toggle-i-owe">
+              <span class="toggle-label">↗️ I Owe Person</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-i-owe" />
+                <span class="switch-slider"></span>
+              </label>
+            </label>
+          </div>
+          <label class="toggle-item" for="toggle-is-settled" style="margin-top:0.25rem">
+            <span class="toggle-label">✅ Settled / Paid</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-is-settled" />
+              <span class="switch-slider"></span>
+            </label>
+          </label>
+        </div>
+        <div class="form-group" style="margin-top:0.75rem">
+          <label>Note (optional)</label>
+          <textarea id="ledger-note" placeholder="Context, reason…"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('ledger-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitLedgerForm()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bill Modal -->
+<div class="modal-overlay" id="bill-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="bill-modal-title">Add Bill</h3>
+      <div class="modal-close" onclick="closeModal('bill-modal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <form id="bill-form" onsubmit="event.preventDefault(); submitBillForm()">
+        <div class="form-group">
+          <label>Bill Title</label>
+          <input type="text" id="bill-title" placeholder="e.g. Mess Rent, WiFi…" list="bill-suggestions" required />
+          <datalist id="bill-suggestions">
+            <option value="Mess Rent" />
+            <option value="Meal Charge" />
+            <option value="WiFi" />
+            <option value="Khala Salary" />
+            <option value="Electricity" />
+            <option value="Water" />
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label>Amount (৳)</label>
+          <input type="number" id="bill-amount" placeholder="0.00" step="0.01" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" id="bill-duedate" />
+        </div>
+        <div class="form-group">
+          <label>Note (optional)</label>
+          <textarea id="bill-note" placeholder="Any remarks…"></textarea>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:0.75rem">
+          <label class="switch" style="margin:0">
+            <input type="checkbox" id="bill-paid" />
+            <span class="switch-slider"></span>
+          </label>
+          <span style="font-size:0.9rem">Already Paid</span>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('bill-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitBillForm()">Save Bill</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-overlay" id="note-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="note-modal-title">Add Note</h3>
+      <div class="modal-close" onclick="closeModal('note-modal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <form id="note-form" onsubmit="event.preventDefault(); submitNoteForm()">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="note-title" placeholder="Note title…" required />
+        </div>
+        <div class="form-group">
+          <label>Content</label>
+          <textarea id="note-content" placeholder="Write your note…" style="min-height:130px"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem">
+          <label class="switch" style="margin:0">
+            <input type="checkbox" id="note-pinned" />
+            <span class="switch-slider"></span>
+          </label>
+          <span style="font-size:0.9rem">📌 Pin this note</span>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('note-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitNoteForm()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts ── -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="app.js"></script>
+<script>
+// ── Dashboard-specific UI helpers ──────────────────────────
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// Show hamburger on mobile
+function checkMobile() {
+  const isMobile = window.innerWidth <= 768;
+  document.getElementById('hamburger-btn').style.display = isMobile ? 'flex' : 'none';
+}
+window.addEventListener('resize', checkMobile);
+checkMobile();
+
+// Theme toggle button
+function toggleTheme() {
+  const isDark = state.settings.theme === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  applyTheme(newTheme);
+  localStorage.setItem('pl_theme', newTheme);
+  document.getElementById('theme-btn').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) toggle.checked = newTheme === 'light';
+}
+
+function onThemeToggle(isLight) {
+  const newTheme = isLight ? 'light' : 'dark';
+  applyTheme(newTheme);
+  localStorage.setItem('pl_theme', newTheme);
+  document.getElementById('theme-btn').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+}
+
+function onLangChange(lang) {
+  applyLanguage(lang);
+  localStorage.setItem('pl_lang', lang);
+}
+
+function handleGlobalSearch(query) {
+  // Delegate to current section's search if available
+  const sectionSearches = {
+    income:   'income-search',
+    expenses: 'expense-search',
+    ledger:   'ledger-search',
+  };
+  const inputId = sectionSearches[state.currentSection];
+  if (inputId) {
+    const el = document.getElementById(inputId);
+    if (el) { el.value = query; renderSection(state.currentSection); }
+  }
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeAllModals();
+  });
+});
+
+// ESC key closes modals
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAllModals();
+});
+
+// Update settings email display
+function updateSettingsEmail() {
+  const el = document.getElementById('settings-email');
+  if (el && state.user) el.textContent = state.user.email;
+}
+
+// Patch showSection to also update settings email
+const _origShowSection = showSection;
+window.showSection = function(name) {
+  _origShowSection(name);
+  if (name === 'settings') { renderSettings(); updateSettingsEmail(); }
+};
+
+// ── Boot ──
+initDashboard();
+</script>
+</body>
+</html>
