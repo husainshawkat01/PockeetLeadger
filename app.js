@@ -5,8 +5,8 @@
 
 // ── Supabase Config ───────────────────────────────────────────
 // Replace with your actual Supabase project credentials
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://pfzdadeujlwrabuapvfp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmemRhZGV1amx3cmFidWFwdmZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MTY4MzUsImV4cCI6MjA5NDQ5MjgzNX0.f72_pHIlzInhY1B1z3HuO0cp6vqjsLHfQRSx4YU__a4';
 
 let supabase = null;
 
